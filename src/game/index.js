@@ -45,30 +45,180 @@ const registerControls = handle => {
     );
 };
 
+const dropCable = () => {
+    let connectedCables = cables.filter(
+        c => {
+            if (c.connectionFront !== null && c.connectionFront.body === player) return true;
+            if (c.connectionBack !== null && c.connectionBack.body === player) return true;
+        }
+    );
+
+
+    for (let i = 0; i < connectedCables.length; i++) {
+        let c = connectedCables[i];
+        if (c.connectionFront !== null && c.connectionFront.body === player) {
+            World.remove(engine.world, c.connectionFront.constraint);
+            c.connectionFront = null;
+            return {
+                cable: c,
+                body: c.composite.bodies[0],
+                connection: 'connectionFront'
+            }
+        }
+
+        if (c.connectionBack !== null && c.connectionBack.body === player) {
+            World.remove(engine.world, c.connectionBack.constraint);
+            c.connectionBack = null;
+            return {
+                cable: c,
+                body: c.composite.bodies[c.composite.bodies.length - 1],
+                connection: 'connectionBack'
+            }
+        }
+    }
+}
+
+
+
+const isPlayerCarryingCable = () => {
+
+    let connectedCables = cables.filter(
+        c => {
+            if (c.connectionFront !== null && c.connectionFront.body === player) return true;
+            if (c.connectionBack !== null && c.connectionBack.body === player) return true;
+        }
+    );
+
+    if (connectedCables.length > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+const nearestMachine = () => {
+
+    let machineDistances = [];
+
+    machines.forEach(m => {
+        let difference = Vector.sub(player.position, m.position);
+        let distance = Vector.magnitude(difference);
+        machineDistances.push({
+            d: distance,
+            m: m
+        });
+    });
+
+    machineDistances = machineDistances.filter(e => e.distance < 60);
+    if (machineDistances.length === 0) return null;
+
+    machineDistances.sort((a, b) => a.distance > b.distance);
+    return machineDistances[0].m;
+};
+
+const nearestCableEnd = () => {
+    let nearestEnd = [];
+
+    cables.forEach(c => {
+        let difference = Vector.sub(player.position, c.composite.bodies[0].position);
+        let distance = Vector.magnitude(difference);
+        nearestEnd.push({
+            distance: distance,
+            cable: c,
+            end: 'connectionFront',
+            body: c.composite.bodies[0]
+        });
+
+        let differenceEnd = Vector.sub(player.position, c.composite.bodies[c.composite.bodies.length - 1].position);
+        let distanceEnd = Vector.magnitude(differenceEnd);
+        nearestEnd.push({
+            distance: distanceEnd,
+            cable: c,
+            end: 'connectionBack',
+            body: c.composite.bodies[c.composite.bodies.length - 1]
+        });
+    })
+
+
+    nearestEnd = nearestEnd.filter(e => e.distance < 60);
+    nearestEnd.sort((a, b) => a.distance > b.distance);
+    if (nearestEnd.length === 0) return {};
+
+    return {
+        cable: nearestEnd[0].cable,
+        end: nearestEnd[0].end,
+        body: nearestEnd[0].body
+    }
+}
+
+const disconnectCableEnd = (cable, end) => {
+    console.log('disconnecting end', end)
+    if (cable[end] === null) return;
+
+    World.remove(engine.world, cable[end].constraint);
+    cable[end] = null;
+};
+
+const connectToPlayer = (cable, end, body) => {
+    console.log('connecting', end, 'to player')
+    let constraint = Constraint.create({
+        bodyA: body,
+        bodyB: player,
+        length: 21,
+    })
+
+    cable[end] = {
+        constraint,
+        body: player
+    };
+
+    World.add(engine.world, constraint);
+};
+
 const toggleGrab = () => {
 
-    if (grabConstraint !== null) {
-        World.remove(engine.world, grabConstraint);
-        grabConstraint = null;
+    if (isPlayerCarryingCable()) {
+
+        let { cable, body, connection } = dropCable();
+
+        let machine = nearestMachine();
+        console.log(machine)
+        if (machine !== null) {
+            let link = Constraint.create({
+                bodyA: body,
+                bodyB: machine,
+                length: 6,
+                pointB: { x: 0, y: MACHINES.HEIGHT / 2 }
+            })
+            cable[connection] = {
+                constraint: link,
+                body: machine
+            };
+            World.add(engine.world, link);
+        }
+
         return;
+
     }
 
-    let playerPosition = player.position;
-    let cablePosition = cables[0].bodies[0].position;
+    // if the player was carrying nothing
 
-    let difference = Vector.sub(playerPosition, cablePosition);
-    let distance = Vector.magnitude(difference);
-    console.log(distance);
+    // find the nearest cable end < minimum distance
 
-    if (distance <= 60) {
+    // if it exists
+    // if it was connected to anything
+    // disconnect
+    // connect it to the player
 
-        grabConstraint = Constraint.create({
-            bodyA: player,
-            bodyB: cables[0].bodies[0],
-            length: 25,
-        });
-        World.add(engine.world, grabConstraint);
+
+    let { cable, end, body } = nearestCableEnd();
+
+    if (cable) {
+        disconnectCableEnd(cable, end);
+        connectToPlayer(cable, end, body);
     }
+
+
 }
 
 const onControlUpdate = downKeys => {
@@ -119,7 +269,11 @@ const addCable = () => {
         render: { type: 'line' }
     });
 
-    cables.push(c);
+    cables.push({
+        composite: c,
+        connectionFront: null,
+        connectionBack: null,
+    });
     World.add(world, c);
 };
 
