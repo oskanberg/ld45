@@ -1,6 +1,6 @@
 
-import { WORLD, PLAYER } from './config';
-import { Engine, Render, Body, Bodies, World, Composites, Vector } from 'matter-js';
+import { WORLD, PLAYER, MACHINES } from './config';
+import { Engine, Render, Body, Bodies, World, Composites, Vector, Constraint } from 'matter-js';
 
 // framework objects
 let engine;
@@ -10,6 +10,8 @@ let runner;
 // in-game objects
 let player;
 let cables = [];
+let machines = [];
+let grabConstraint = null;
 
 let playerDirection = {
     x: 0, y: 0,
@@ -43,6 +45,32 @@ const registerControls = handle => {
     );
 };
 
+const toggleGrab = () => {
+
+    if (grabConstraint !== null) {
+        World.remove(engine.world, grabConstraint);
+        grabConstraint = null;
+        return;
+    }
+
+    let playerPosition = player.position;
+    let cablePosition = cables[0].bodies[0].position;
+
+    let difference = Vector.sub(playerPosition, cablePosition);
+    let distance = Vector.magnitude(difference);
+    console.log(distance);
+
+    if (distance <= 60) {
+
+        grabConstraint = Constraint.create({
+            bodyA: player,
+            bodyB: cables[0].bodies[0],
+            length: 25,
+        });
+        World.add(engine.world, grabConstraint);
+    }
+}
+
 const onControlUpdate = downKeys => {
     // movement
     {
@@ -54,6 +82,12 @@ const onControlUpdate = downKeys => {
         if ('d' in downKeys && !('a' in downKeys)) d.x = 1;
 
         playerDirection = d;
+
+        // space bar for plug / unplug
+
+        if (' ' in downKeys) {
+            toggleGrab();
+        }
     }
 
     // pause unpause
@@ -63,7 +97,8 @@ const onControlUpdate = downKeys => {
 };
 
 const addPlayer = () => {
-    player = Bodies.circle(WORLD.WIDTH / 2, 100, 20, {
+    player = Bodies.circle(
+        WORLD.WIDTH / 2, 100, 20, {
         frictionAir: 0.05,
         density: 0.001,
         isStatic: false
@@ -88,6 +123,17 @@ const addCable = () => {
     World.add(world, c);
 };
 
+const addMachine = (x, y) => {
+    let w = (Bodies.rectangle(x, y, MACHINES.WIDTH, MACHINES.HEIGHT, {
+        density: 0.1,
+        frictionAir: 0.05
+    }));
+
+    machines.push(w);
+    World.add(engine.world, w);
+
+}
+
 const togglePause = () => {
     if (!runner) return startRunner(tick);
 
@@ -97,7 +143,7 @@ const togglePause = () => {
 
 const create = (element) => {
     engine = Engine.create();
-    engine.constraintIterations = 1;
+    engine.constraintIterations = 10;
     world = engine.world;
     world.gravity.y = 0;
     world.gravity.x = 0;
@@ -117,6 +163,7 @@ const create = (element) => {
 
     addPlayer();
     addCable();
+    addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 2);
     togglePause();
     Render.run(render);
 

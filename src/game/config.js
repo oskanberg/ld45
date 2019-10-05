@@ -8,3 +8,8 @@ export const WORLD = {
 export const PLAYER = {
     SPEED: 1e-3
 };
+
+export const MACHINES = {
+    HEIGHT: 80,
+    WIDTH: 60,
+};
