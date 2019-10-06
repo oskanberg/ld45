@@ -40,34 +40,6 @@ export const render = (player, cables, machines, plugs, tick) => {
         app.stage.addChild(cable.display);
     });
 
-    // machines
-    machines.forEach(machine => {
-        const progressB = new Graphics()
-        progressB.beginFill(0xDE3249);
-        progressB.drawRect(machine.body.position.x - 50, machine.body.position.y + 100, machine.loadProgress, 20);
-        progressB.endFill();
-
-        machine.display = Sprite.from(washer1PNG);
-        machine.display.anchor.set(0.5);
-        // machine.display.scale.set(10, 10);
-        machine.display.width = MACHINES.WIDTH + 20;
-        machine.display.height = MACHINES.HEIGHT + 50;
-        machine.display.position.set(machine.body.position.x, machine.body.position.y);
-        machine.progressBar = progressB;
-        app.stage.addChild(machine.display);
-        app.stage.addChild(machine.progressBar);
-    });
-
-    // machines
-    plugs.forEach(plug => {
-        plug.display = Sprite.from(playerPNG);
-        plug.display.anchor.set(0.5);
-        plug.display.width = PLUGS.WIDTH;
-        plug.display.height = PLUGS.HEIGHT;
-        plug.display.position.set(plug.position.x, plug.position.y);
-        app.stage.addChild(plug.display);
-    });
-
 
     const style = new TextStyle({
         fontFamily: 'Arial',
@@ -84,6 +56,42 @@ export const render = (player, cables, machines, plugs, tick) => {
         dropShadowDistance: 6,
         wordWrap: true,
         wordWrapWidth: 440,
+    });
+
+
+    // machines
+    machines.forEach(machine => {
+        const progressB = new Graphics()
+        progressB.beginFill(0xDE3249);
+        progressB.drawRect(machine.body.position.x - 50, machine.body.position.y + 100, machine.loadProgress, 20);
+        progressB.endFill();
+
+        machine.loadsText = new Text(`${machine.loadsWaiting}`, style);
+        machine.loadsText.x = machine.body.position.x - 50;
+        machine.loadsText.y = machine.body.position.y - MACHINES.HEIGHT / 2;
+        app.stage.addChild(machine.loadsText);
+
+        machine.display = Sprite.from(washer1PNG);
+        machine.display.anchor.set(0.5);
+        // machine.display.scale.set(10, 10);
+        machine.display.width = MACHINES.WIDTH + 20;
+        machine.display.height = MACHINES.HEIGHT + 50;
+        machine.display.position.set(machine.body.position.x, machine.body.position.y);
+        machine.progressBar = progressB;
+        app.stage.addChild(machine.display);
+        app.stage.addChild(machine.progressBar);
+
+
+    });
+
+    // machines
+    plugs.forEach(plug => {
+        plug.display = Sprite.from(playerPNG);
+        plug.display.anchor.set(0.5);
+        plug.display.width = PLUGS.WIDTH;
+        plug.display.height = PLUGS.HEIGHT;
+        plug.display.position.set(plug.position.x, plug.position.y);
+        app.stage.addChild(plug.display);
     });
 
     let pointsText = new Text(`${player.points}`, style);
@@ -114,6 +122,13 @@ export const render = (player, cables, machines, plugs, tick) => {
         app.stage.addChild(pointsText);
 
         machines.forEach(m => {
+            app.stage.removeChild(m.loadsText);
+            m.loadsText = new Text(`${m.loadsWaiting}`, style);
+            m.loadsText.x = m.body.position.x - 50;
+            m.loadsText.y = m.body.position.y - MACHINES.HEIGHT / 2;
+            app.stage.addChild(m.loadsText);
+
+
             // app.stage.removeChild(m.progressBar)
             m.progressBar.clear();
             m.progressBar.beginFill(0xDE3249);
