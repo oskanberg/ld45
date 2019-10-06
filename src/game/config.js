@@ -9,12 +9,13 @@ export const PLAYER = {
     SPEED: 1e-3,
     HEIGHT: 100,
     WIDTH: 80,
+    GRAB_DISTANCE: 150
 };
 
 export const MACHINES = {
     HEIGHT: 100,
     WIDTH: 80,
-    PROGRESS_PER_TICK: 15 * (1 / WORLD.TICKS_PS)
+    PROGRESS_PER_TICK: 20 * (1 / WORLD.TICKS_PS)
 };
 
 export const PLUGS = {

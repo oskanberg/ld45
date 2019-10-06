@@ -152,7 +152,7 @@ const nearestPlug = () => {
     });
 
     plugDistances = plugDistances.filter(e => {
-        return e.distance < 90;
+        return e.distance < PLAYER.GRAB_DISTANCE;
     });
 
     if (plugDistances.length === 0) {
@@ -190,7 +190,7 @@ const nearestCableEnd = () => {
     })
 
 
-    nearestEnd = nearestEnd.filter(e => e.distance < 60);
+    nearestEnd = nearestEnd.filter(e => e.distance < PLAYER.GRAB_DISTANCE);
     nearestEnd.sort((a, b) => a.distance > b.distance);
     if (nearestEnd.length === 0) return {};
 
@@ -446,14 +446,22 @@ const create = element => {
     addPlayer();
     addCable(350, 100, 50);
     addCable(350, 300, 50);
-    addMachine(WORLD.WIDTH * 2 / 3, WORLD.HEIGHT / 2);
-    addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 2);
+    addMachine(WORLD.WIDTH * 2 / 3, WORLD.HEIGHT / 3);
+    addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 3);
+    addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 3);
+    addMachine(WORLD.WIDTH * 2 / 3, WORLD.HEIGHT / 1.5);
+    addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 1.5);
+    addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 1.5);
     addPlug(WORLD.WIDTH / 2, PLUGS.HEIGHT / 2);
-    addPlug(WORLD.WIDTH / 1.5, PLUGS.HEIGHT / 2);
+    // addPlug(WORLD.WIDTH / 1.5, PLUGS.HEIGHT / 2);
     // togglePause();
     // Render.run(render);
 
     registerControls(onKeyDownUpdate, onKeyUpUpdate);
+
+    setInterval(() => {
+        machines[Math.floor(Math.random() * machines.length)].loadsWaiting++;
+    }, 5000)
 
     return {
         // canvas: render.canvas,
