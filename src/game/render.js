@@ -17,6 +17,8 @@ export const createRenderer = () => {
     return app.view;
 }
 
+
+
 const d = (1000 / 30.0);
 export const render = (player, cables, machines, plugs, tick) => {
     // players
@@ -35,12 +37,26 @@ export const render = (player, cables, machines, plugs, tick) => {
 
     // machines
     machines.forEach(machine => {
+
+
+
+        const progressB = new Graphics()
+        progressB.beginFill(0xDE3249);
+        progressB.drawRect(machine.body.position.x - 50, machine.body.position.y + 100, machine.loadProgress, 20);
+        progressB.endFill();
+
         machine.display = Sprite.from(earthPNG);
         machine.display.anchor.set(0.5);
         machine.display.width = MACHINES.WIDTH;
         machine.display.height = MACHINES.HEIGHT;
         machine.display.position.set(machine.body.position.x, machine.body.position.y);
+        machine.progressBar = progressB;
         app.stage.addChild(machine.display);
+        app.stage.addChild(machine.progressBar);
+
+        // set uop progress rectangle in similar position
+        // x y h w
+
     });
 
     // machines
@@ -98,6 +114,19 @@ export const render = (player, cables, machines, plugs, tick) => {
         pointsText.y = 50;
         app.stage.addChild(pointsText);
 
+        machines.forEach(m => {
+            // app.stage.removeChild(m.progressBar)
+            m.progressBar.clear();
+            m.progressBar.beginFill(0xDE3249);
+            m.progressBar.drawRect(m.body.position.x - 50, m.body.position.y + 100, m.loadProgress, 20);
+            m.progressBar.endFill();
+            // app.stage.addChild(m.progressBar)
+        })
+
         tick(delta * d);
+
+        // Progress bar
+
+
     });
 }
