@@ -1,5 +1,5 @@
 
-import { WORLD, PLAYER, MACHINES } from './config';
+import { WORLD, PLAYER, MACHINES, PLUGS } from './config';
 import { Engine, Render, Body, Bodies, World, Composites, Vector, Constraint } from 'matter-js';
 
 // framework objects
@@ -11,6 +11,7 @@ let runner;
 let player;
 let cables = [];
 let machines = [];
+let plugs = [];
 let grabConstraint = null;
 
 let playerDirection = {
@@ -35,13 +36,13 @@ const tick = d => {
     Engine.update(engine, d);
 };
 
-const registerControls = handle => {
+const registerControls = (handleDown, handleUp) => {
     let down = {};
     document.addEventListener(
-        'keyup', e => { delete down[e.key]; handle(down); }
+        'keyup', e => { delete down[e.key]; handleDown(down); handleUp(e.key); }
     );
     document.addEventListener(
-        'keydown', e => { down[e.key] = true; handle(down); }
+        'keydown', e => { down[e.key] = true; handleDown(down); }
     );
 };
 
@@ -104,17 +105,53 @@ const nearestMachine = () => {
         let difference = Vector.sub(player.position, m.position);
         let distance = Vector.magnitude(difference);
         machineDistances.push({
-            d: distance,
-            m: m
+            distance: distance,
+            machine: m
         });
     });
 
-    machineDistances = machineDistances.filter(e => e.distance < 60);
-    if (machineDistances.length === 0) return null;
+    machineDistances = machineDistances.filter(e => {
+        return e.distance < 90;
+    });
+
+    if (machineDistances.length === 0) {
+        return {
+            distance: null,
+            machine: null
+        }
+    };
 
     machineDistances.sort((a, b) => a.distance > b.distance);
-    return machineDistances[0].m;
+    return machineDistances[0];
 };
+
+const nearestPlug = () => {
+
+    let plugDistances = [];
+
+    plugs.forEach(plug => {
+        let difference = Vector.sub(player.position, plug.position);
+        let distance = Vector.magnitude(difference);
+        plugDistances.push({
+            distance: distance,
+            plug: plug,
+        });
+    });
+
+    plugDistances = plugDistances.filter(e => {
+        return e.distance < 90;
+    });
+
+    if (plugDistances.length === 0) {
+        return {
+            distance: null,
+            plug: null
+        }
+    };
+
+    plugDistances.sort((a, b) => a.distance > b.distance);
+    return plugDistances[0];
+}
 
 const nearestCableEnd = () => {
     let nearestEnd = [];
@@ -164,7 +201,8 @@ const connectToPlayer = (cable, end, body) => {
     let constraint = Constraint.create({
         bodyA: body,
         bodyB: player,
-        length: 21,
+        length: 30,
+        // stiffness: 0.8
     })
 
     cable[end] = {
@@ -181,22 +219,46 @@ const toggleGrab = () => {
 
         let { cable, body, connection } = dropCable();
 
-        let machine = nearestMachine();
-        console.log(machine)
-        if (machine !== null) {
+        let { machine, distance: machineDistance } = nearestMachine();
+
+        let { plug, distance: plugDistance } = nearestPlug();
+        console.log(plug);
+
+        // both
+        if (plug === null && machine === null) {
+            return;
+        }
+
+        if (machine === null || (plug !== null && plugDistance < machineDistance)) {
+            let link = Constraint.create({
+                bodyA: body,
+                bodyB: plug,
+                length: 10,
+                pointB: { x: 0, y: (PLUGS.HEIGHT / 2) + 5 }
+            })
+            cable[connection] = {
+                constraint: link,
+                body: plug
+            };
+            World.add(engine.world, link);
+            return;
+        }
+
+        if (plug === null || (machine !== null && machineDistance < plugDistance)) {
+            console.log(machineDistance, plugDistance);
             let link = Constraint.create({
                 bodyA: body,
                 bodyB: machine,
-                length: 6,
-                pointB: { x: 0, y: MACHINES.HEIGHT / 2 }
+                length: 10,
+                pointB: { x: 0, y: (MACHINES.HEIGHT / 2) + 5 }
             })
             cable[connection] = {
                 constraint: link,
                 body: machine
             };
             World.add(engine.world, link);
+            return;
         }
-
         return;
 
     }
@@ -218,10 +280,9 @@ const toggleGrab = () => {
         connectToPlayer(cable, end, body);
     }
 
-
 }
 
-const onControlUpdate = downKeys => {
+const onKeyDownUpdate = downKeys => {
     // movement
     {
         let d = { x: 0, y: 0 };
@@ -232,17 +293,19 @@ const onControlUpdate = downKeys => {
         if ('d' in downKeys && !('a' in downKeys)) d.x = 1;
 
         playerDirection = d;
-
-        // space bar for plug / unplug
-
-        if (' ' in downKeys) {
-            toggleGrab();
-        }
     }
 
     // pause unpause
     {
         if ('Escape' in downKeys) togglePause();
+    }
+};
+
+const onKeyUpUpdate = upKey => {
+    // space bar for plug / unplug
+
+    if (' ' === upKey) {
+        toggleGrab();
     }
 };
 
@@ -256,11 +319,12 @@ const addPlayer = () => {
     World.add(engine.world, player);
 };
 
-const addCable = () => {
-    let c = Composites.stack(350, 100, 100, 1, 1, 5, (x, y) => {
+const addCable = (xx, yy) => {
+
+    let c = Composites.stack(xx, yy, 100, 1, 1, 5, (x, y) => {
         return Bodies.circle(x, y, 5, {
             density: 0.0002,
-            frictionAir: 0.05
+            frictionAir: 0.03
         });
     });
 
@@ -279,12 +343,25 @@ const addCable = () => {
 
 const addMachine = (x, y) => {
     let w = (Bodies.rectangle(x, y, MACHINES.WIDTH, MACHINES.HEIGHT, {
-        density: 0.1,
-        frictionAir: 0.05
+        // density: 0.1,
+        // frictionAir: 0.05,
+        isStatic: true,
     }));
 
     machines.push(w);
     World.add(engine.world, w);
+
+}
+
+const addPlug = (x, y) => {
+    let p = (Bodies.rectangle(x, y, PLUGS.WIDTH, PLUGS.HEIGHT, {
+        // density: 0.1,
+        // frictionAir: 0.05,
+        isStatic: true,
+    }));
+
+    plugs.push(p);
+    World.add(engine.world, p);
 
 }
 
@@ -297,7 +374,7 @@ const togglePause = () => {
 
 const create = (element) => {
     engine = Engine.create();
-    engine.constraintIterations = 10;
+    engine.constraintIterations = 1;
     world = engine.world;
     world.gravity.y = 0;
     world.gravity.x = 0;
@@ -316,12 +393,15 @@ const create = (element) => {
     });
 
     addPlayer();
-    addCable();
+    addCable(350, 100);
+    addCable(350, 300);
     addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 2);
+    addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 3);
+    addPlug(WORLD.WIDTH / 2, PLUGS.HEIGHT / 2);
     togglePause();
     Render.run(render);
 
-    registerControls(onControlUpdate);
+    registerControls(onKeyDownUpdate, onKeyUpUpdate);
 
     return {
         canvas: render.canvas,
