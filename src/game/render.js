@@ -1,7 +1,11 @@
 
-import { WORLD, MACHINES, PLUGS } from './config';
+import { WORLD, MACHINES, PLUGS, PLAYER } from './config';
 import { Application, Sprite, Text, TextStyle, Graphics } from 'pixi.js';
-import earthPNG from '../img/earth.png';
+
+import playerPNG from '../img/player.png';
+import washer1PNG from '../img/washer1.png';
+
+
 
 let app;
 
@@ -22,10 +26,11 @@ export const createRenderer = () => {
 const d = (1000 / 30.0);
 export const render = (player, cables, machines, plugs, tick) => {
     // players
-    let playerSprite = Sprite.from(earthPNG);
+    let playerSprite = Sprite.from(playerPNG);
     playerSprite.anchor.set(0.5);
-    playerSprite.width = 30;
-    playerSprite.height = 30;
+    playerSprite.width = PLAYER.WIDTH;
+    playerSprite.height = PLAYER.HEIGHT;
+    playerSprite.rotation = Math.PI / 2;
     playerSprite.position.set(player.position.x, player.position.y);
     app.stage.addChild(playerSprite);
 
@@ -37,31 +42,25 @@ export const render = (player, cables, machines, plugs, tick) => {
 
     // machines
     machines.forEach(machine => {
-
-
-
         const progressB = new Graphics()
         progressB.beginFill(0xDE3249);
         progressB.drawRect(machine.body.position.x - 50, machine.body.position.y + 100, machine.loadProgress, 20);
         progressB.endFill();
 
-        machine.display = Sprite.from(earthPNG);
+        machine.display = Sprite.from(washer1PNG);
         machine.display.anchor.set(0.5);
-        machine.display.width = MACHINES.WIDTH;
-        machine.display.height = MACHINES.HEIGHT;
+        // machine.display.scale.set(10, 10);
+        machine.display.width = MACHINES.WIDTH + 20;
+        machine.display.height = MACHINES.HEIGHT + 50;
         machine.display.position.set(machine.body.position.x, machine.body.position.y);
         machine.progressBar = progressB;
         app.stage.addChild(machine.display);
         app.stage.addChild(machine.progressBar);
-
-        // set uop progress rectangle in similar position
-        // x y h w
-
     });
 
     // machines
     plugs.forEach(plug => {
-        plug.display = Sprite.from(earthPNG);
+        plug.display = Sprite.from(playerPNG);
         plug.display.anchor.set(0.5);
         plug.display.width = PLUGS.WIDTH;
         plug.display.height = PLUGS.HEIGHT;
