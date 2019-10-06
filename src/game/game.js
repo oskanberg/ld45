@@ -12,7 +12,6 @@ let player;
 let cables = [];
 let machines = [];
 let plugs = [];
-let points = 0;
 
 let playerDirection = {
     x: 0, y: 0,
@@ -40,10 +39,10 @@ const tick = d => {
             machine.loadProgress += MACHINES.PROGRESS_PER_TICK;
 
             if (machine.loadProgress >= 100) {
-                points++;
+                player.points++;
                 machine.loadProgress = 0;
                 machine.loadsWaiting--;
-                console.log("Points: " + points);
+                console.log("Points: " + player.points);
             }
         })
 
@@ -363,6 +362,7 @@ const addPlayer = () => {
         density: 0.001,
         isStatic: false
     });
+    player.points = 0;
     World.add(engine.world, player);
 };
 

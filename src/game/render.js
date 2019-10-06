@@ -1,6 +1,6 @@
 
-import { WORLD } from './config';
-import { Application, Sprite, Point, Graphics } from 'pixi.js';
+import { WORLD, MACHINES, PLUGS } from './config';
+import { Application, Sprite, Text, TextStyle, Graphics } from 'pixi.js';
 import earthPNG from '../img/earth.png';
 
 let app;
@@ -37,8 +37,8 @@ export const render = (player, cables, machines, plugs, tick) => {
     machines.forEach(machine => {
         machine.display = Sprite.from(earthPNG);
         machine.display.anchor.set(0.5);
-        machine.display.width = 30;
-        machine.display.height = 30;
+        machine.display.width = MACHINES.WIDTH;
+        machine.display.height = MACHINES.HEIGHT;
         machine.display.position.set(machine.body.position.x, machine.body.position.y);
         app.stage.addChild(machine.display);
     });
@@ -47,11 +47,34 @@ export const render = (player, cables, machines, plugs, tick) => {
     plugs.forEach(plug => {
         plug.display = Sprite.from(earthPNG);
         plug.display.anchor.set(0.5);
-        plug.display.width = 30;
-        plug.display.height = 30;
+        plug.display.width = PLUGS.WIDTH;
+        plug.display.height = PLUGS.HEIGHT;
         plug.display.position.set(plug.position.x, plug.position.y);
         app.stage.addChild(plug.display);
     });
+
+
+    const style = new TextStyle({
+        fontFamily: 'Arial',
+        fontSize: 36,
+        fontStyle: 'italic',
+        fontWeight: 'bold',
+        fill: ['#ffffff', '#00ff99'], // gradient
+        stroke: '#4a1850',
+        strokeThickness: 5,
+        dropShadow: true,
+        dropShadowColor: '#000000',
+        dropShadowBlur: 4,
+        dropShadowAngle: Math.PI / 6,
+        dropShadowDistance: 6,
+        wordWrap: true,
+        wordWrapWidth: 440,
+    });
+
+    let pointsText = new Text(`${player.points}`, style);
+    pointsText.x = 50;
+    pointsText.y = 50;
+    app.stage.addChild(pointsText);
 
     app.ticker.add(delta => {
         // player
@@ -67,6 +90,13 @@ export const render = (player, cables, machines, plugs, tick) => {
             }
             cable.display.closePath();
         });
+
+        // points
+        app.stage.removeChild(pointsText);
+        pointsText = new Text(`${player.points}`, style);
+        pointsText.x = 50;
+        pointsText.y = 50;
+        app.stage.addChild(pointsText);
 
         tick(delta * d);
     });
