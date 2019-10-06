@@ -102,6 +102,7 @@ export const render = (player, cables, machines, plugs, tick) => {
     app.ticker.add(delta => {
         // player
         playerSprite.position.set(player.position.x, player.position.y);
+        playerSprite.rotation = Math.atan2(player.velocity.y, player.velocity.x) + Math.PI / 2;
 
         // cables
         cables.forEach(cable => {
@@ -129,18 +130,12 @@ export const render = (player, cables, machines, plugs, tick) => {
             app.stage.addChild(m.loadsText);
 
 
-            // app.stage.removeChild(m.progressBar)
             m.progressBar.clear();
             m.progressBar.beginFill(0xDE3249);
             m.progressBar.drawRect(m.body.position.x - 50, m.body.position.y + 100, m.loadProgress, 20);
             m.progressBar.endFill();
-            // app.stage.addChild(m.progressBar)
         })
 
         tick(delta * d);
-
-        // Progress bar
-
-
     });
 }
