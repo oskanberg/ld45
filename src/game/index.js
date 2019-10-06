@@ -12,7 +12,7 @@ let player;
 let cables = [];
 let machines = [];
 let plugs = [];
-let grabConstraint = null;
+let points = 0;
 
 let playerDirection = {
     x: 0, y: 0,
@@ -33,6 +33,20 @@ const tick = d => {
         },
         force
     );
+
+    machines
+        .filter(m => m.isActivated && m.loadsWaiting > 0)
+        .forEach(machine => {
+            machine.loadProgress += MACHINES.PROGRESS_PER_TICK;
+
+            if (machine.loadProgress >= 100) {
+                points++;
+                machine.loadProgress = 0;
+                machine.loadsWaiting--;
+                console.log("Points: " + points);
+            }
+        })
+
     Engine.update(engine, d);
 };
 
@@ -102,11 +116,11 @@ const nearestMachine = () => {
     let machineDistances = [];
 
     machines.forEach(m => {
-        let difference = Vector.sub(player.position, m.position);
+        let difference = Vector.sub(player.position, m.body.position);
         let distance = Vector.magnitude(difference);
         machineDistances.push({
             distance: distance,
-            machine: m
+            machine: m.body
         });
     });
 
@@ -189,7 +203,7 @@ const nearestCableEnd = () => {
 }
 
 const disconnectCableEnd = (cable, end) => {
-    console.log('disconnecting end', end)
+
     if (cable[end] === null) return;
 
     World.remove(engine.world, cable[end].constraint);
@@ -197,7 +211,7 @@ const disconnectCableEnd = (cable, end) => {
 };
 
 const connectToPlayer = (cable, end, body) => {
-    console.log('connecting', end, 'to player')
+
     let constraint = Constraint.create({
         bodyA: body,
         bodyB: player,
@@ -213,6 +227,36 @@ const connectToPlayer = (cable, end, body) => {
     World.add(engine.world, constraint);
 };
 
+const updateMachineState = () => {
+    let pluggedInCables = cables.filter(c => {
+        if (c.connectionFront === null || c.connectionBack === null) {
+            return false;
+        }
+
+        if (!plugs.some(p => (p === c.connectionFront.body || p === c.connectionBack.body))) {
+            return false;
+        }
+
+        return true;
+    });
+
+    if (pluggedInCables.length === 0) return;
+
+    machines.forEach(machine => {
+        machine.isActivated = false;
+        pluggedInCables.forEach(cable => {
+            if (cable.connectionFront.body === machine.body) {
+                machine.isActivated = true;
+            };
+
+            if (cable.connectionBack.body === machine.body) {
+                machine.isActivated = true;
+            }
+        })
+    })
+
+}
+
 const toggleGrab = () => {
 
     if (isPlayerCarryingCable()) {
@@ -222,7 +266,7 @@ const toggleGrab = () => {
         let { machine, distance: machineDistance } = nearestMachine();
 
         let { plug, distance: plugDistance } = nearestPlug();
-        console.log(plug);
+
 
         // both
         if (plug === null && machine === null) {
@@ -241,11 +285,12 @@ const toggleGrab = () => {
                 body: plug
             };
             World.add(engine.world, link);
+            updateMachineState();
             return;
         }
 
         if (plug === null || (machine !== null && machineDistance < plugDistance)) {
-            console.log(machineDistance, plugDistance);
+
             let link = Constraint.create({
                 bodyA: body,
                 bodyB: machine,
@@ -257,6 +302,7 @@ const toggleGrab = () => {
                 body: machine
             };
             World.add(engine.world, link);
+            updateMachineState();
             return;
         }
         return;
@@ -277,6 +323,7 @@ const toggleGrab = () => {
 
     if (cable) {
         disconnectCableEnd(cable, end);
+        updateMachineState();
         connectToPlayer(cable, end, body);
     }
 
@@ -319,9 +366,9 @@ const addPlayer = () => {
     World.add(engine.world, player);
 };
 
-const addCable = (xx, yy) => {
+const addCable = (xx, yy, length) => {
 
-    let c = Composites.stack(xx, yy, 100, 1, 1, 5, (x, y) => {
+    let c = Composites.stack(xx, yy, length, 1, 1, 5, (x, y) => {
         return Bodies.circle(x, y, 5, {
             density: 0.0002,
             frictionAir: 0.03
@@ -348,7 +395,12 @@ const addMachine = (x, y) => {
         isStatic: true,
     }));
 
-    machines.push(w);
+    machines.push({
+        body: w,
+        isActivated: false,
+        loadProgress: 0,
+        loadsWaiting: 3,
+    });
     World.add(engine.world, w);
 
 }
@@ -362,8 +414,7 @@ const addPlug = (x, y) => {
 
     plugs.push(p);
     World.add(engine.world, p);
-
-}
+};
 
 const togglePause = () => {
     if (!runner) return startRunner(tick);
@@ -393,11 +444,12 @@ const create = (element) => {
     });
 
     addPlayer();
-    addCable(350, 100);
-    addCable(350, 300);
-    addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 2);
-    addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 3);
+    addCable(350, 100, 50);
+    addCable(350, 300, 50);
+    addMachine(WORLD.WIDTH * 2 / 3, WORLD.HEIGHT / 2);
+    addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 2);
     addPlug(WORLD.WIDTH / 2, PLUGS.HEIGHT / 2);
+    addPlug(WORLD.WIDTH / 1.5, PLUGS.HEIGHT / 2);
     togglePause();
     Render.run(render);
 
