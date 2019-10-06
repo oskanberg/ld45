@@ -1,6 +1,10 @@
 import './index.css';
-import create from './game';
+import createPhysics from './game/game.js';
+import { createRenderer, render } from './game/render.js';
 
-let { pause } = create(document.getElementById('game'));
+let { cables, player, machines, plugs, tick } = createPhysics();
 
-// document.getElementById('game').appendChild(GameView);
+let canvas = createRenderer();
+document.getElementById('game').appendChild(canvas);
+
+render(player, cables, machines, plugs, tick);
