@@ -220,7 +220,7 @@ const connectToPlayer = (cable, end, body) => {
     let constraint = Constraint.create({
         bodyA: body,
         bodyB: player,
-        length: 30,
+        length: PLAYER.RADIUS + 10,
         // stiffness: 0.8
     })
 
@@ -283,8 +283,8 @@ const toggleGrab = () => {
             let link = Constraint.create({
                 bodyA: body,
                 bodyB: plug,
-                length: 10,
-                pointB: { x: 0, y: (PLUGS.HEIGHT / 2) + 5 }
+                length: PLUGS.HEIGHT / 1.5,
+                pointB: { x: 0, y: 0 }
             })
             cable[connection] = {
                 constraint: link,
@@ -363,7 +363,7 @@ const onKeyUpUpdate = upKey => {
 
 const addPlayer = () => {
     player = Bodies.circle(
-        WORLD.WIDTH / 2, 100, 20, {
+        WORLD.WIDTH / 2, 100, PLAYER.RADIUS, {
         frictionAir: 0.05,
         density: 0.001,
         isStatic: false
@@ -373,7 +373,7 @@ const addPlayer = () => {
 };
 
 const addCable = (xx, yy, length) => {
-    let c = Composites.stack(xx, yy, 1, length, 1, 5, (x, y) => {
+    let c = Composites.stack(xx, yy, 1, length, 1, 7, (x, y) => {
         return Bodies.circle(x, y, 5, {
             density: 0.0002,
             frictionAir: 0.03
@@ -438,6 +438,7 @@ const create = (shouldRender, element) => {
     addPlayer();
     addCable(WORLD.WIDTH / 2.5, 100, 30);
     addCable(WORLD.WIDTH / 1.75, 100, 30);
+    addCable(WORLD.WIDTH / 3.75, 300, 30)
     addMachine(WORLD.WIDTH * 2 / 3, WORLD.HEIGHT / 3);
     addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 3);
     addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 3);
@@ -445,6 +446,7 @@ const create = (shouldRender, element) => {
     addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 1.5);
     addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 1.5);
     addPlug(WORLD.WIDTH / 2, PLUGS.HEIGHT / 2);
+    addPlug(WORLD.WIDTH / 2, WORLD.HEIGHT - PLUGS.HEIGHT / 2);
 
     registerControls(onKeyDownUpdate, onKeyUpUpdate);
 

@@ -10,8 +10,7 @@ let {
     player,
     machines,
     plugs,
-    tick,
-    canvas
+    tick
 } = createPhysics(DEBUG_RENDER, document.getElementById('game'));
 
 if (!DEBUG_RENDER) {

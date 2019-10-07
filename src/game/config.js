@@ -6,10 +6,9 @@ export const WORLD = {
 };
 
 export const PLAYER = {
-    SPEED: 1e-3,
-    HEIGHT: 100,
-    WIDTH: 80,
-    GRAB_DISTANCE: 150
+    SPEED: 1e-1 / WORLD.TICKS_PS,
+    RADIUS: 25,
+    GRAB_DISTANCE: 100
 };
 
 export const MACHINES = {

@@ -23,19 +23,18 @@ export const createRenderer = () => {
         resolution: window.devicePixelRatio || 1,
         antialias: true,
     });
-    app.ticker.speed = 0.6;
+    app.ticker.speed = 1;
     return app.view;
 }
 
 
-
-const d = (1000 / 30.0);
+const d = (1000 / WORLD.TICKS_PS);
 export const render = (player, cables, machines, plugs, tick) => {
     // players
     let playerSprite = Sprite.from(playerPNG);
     playerSprite.anchor.set(0.5);
-    playerSprite.width = PLAYER.WIDTH;
-    playerSprite.height = PLAYER.HEIGHT;
+    playerSprite.width = PLAYER.RADIUS * 2 + 20;
+    playerSprite.height = PLAYER.RADIUS * 2 + 20;
     playerSprite.rotation = Math.PI / 2;
     playerSprite.position.set(player.position.x, player.position.y);
     app.stage.addChild(playerSprite);
