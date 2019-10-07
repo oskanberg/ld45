@@ -6,7 +6,6 @@ import playerPNG from '../img/player.png';
 import washer1PNG from '../img/washer1.png';
 import washer2PNG from '../img/washer2.png';
 import washer3PNG from '../img/washer3.png';
-import { createPublicKey } from 'crypto';
 
 const randomWasher = () => {
     let washers = [washer1PNG, washer2PNG, washer3PNG];
