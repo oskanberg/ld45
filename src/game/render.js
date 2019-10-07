@@ -6,6 +6,7 @@ import playerPNG from '../img/player.png';
 import washer1PNG from '../img/washer1.png';
 import washer2PNG from '../img/washer2.png';
 import washer3PNG from '../img/washer3.png';
+import plugPNG from '../img/plug.png';
 
 const randomWasher = () => {
     let washers = [washer1PNG, washer2PNG, washer3PNG];
@@ -44,6 +45,7 @@ export const render = (player, cables, machines, plugs, tick) => {
         cable.display = new Graphics();
         app.stage.addChild(cable.display);
     });
+
 
 
     const style = new TextStyle({
@@ -88,12 +90,15 @@ export const render = (player, cables, machines, plugs, tick) => {
         app.stage.addChild(machine.progressBar);
     });
 
-    // machines
+    // plugs
     plugs.forEach(plug => {
-        plug.display = new Graphics();
-        plug.display.beginFill(0);
-        plug.display.drawRect(plug.position.x - PLUGS.WIDTH / 2, plug.position.y - PLUGS.HEIGHT / 2, PLUGS.WIDTH, PLUGS.HEIGHT);
-        plug.display.endFill();
+
+
+        plug.display = Sprite.from(plugPNG);
+        plug.display.anchor.set(0.5);
+        plug.display.width = PLUGS.WIDTH;
+        plug.display.height = PLUGS.HEIGHT;
+        plug.display.position.set(plug.position.x - PLUGS.WIDTH / 2, plug.position.y - PLUGS.HEIGHT / 30);
         app.stage.addChild(plug.display);
     });
 
