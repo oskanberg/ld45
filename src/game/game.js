@@ -369,7 +369,7 @@ const addPlayer = () => {
 };
 
 const addCable = (xx, yy, length) => {
-    let c = Composites.stack(xx, yy, length, 1, 1, 5, (x, y) => {
+    let c = Composites.stack(xx, yy, 1, length, 1, 5, (x, y) => {
         return Bodies.circle(x, y, 5, {
             density: 0.0002,
             frictionAir: 0.03
@@ -445,8 +445,8 @@ const create = element => {
     // });
 
     addPlayer();
-    addCable(350, 100, 50);
-    addCable(350, 300, 50);
+    addCable(WORLD.WIDTH / 2.5, 100, 30);
+    addCable(WORLD.WIDTH / 1.75, 100, 30);
     addMachine(WORLD.WIDTH * 2 / 3, WORLD.HEIGHT / 3);
     addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 3);
     addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 3);
