@@ -36,7 +36,7 @@ const tick = d => {
     machines
         .filter(m => m.isActivated && m.loadsWaiting > 0)
         .forEach(machine => {
-            machine.body.position.x += Math.sin(machine.loadProgress * 2);
+            machine.body.position.x += Math.sin(machine.loadProgress * 2) + (Math.random() * 2) - 1;
             machine.loadProgress += MACHINES.PROGRESS_PER_TICK;
 
             if (machine.loadProgress >= 100) {
@@ -65,6 +65,7 @@ const dropCable = () => {
         c => {
             if (c.connectionFront !== null && c.connectionFront.body === player) return true;
             if (c.connectionBack !== null && c.connectionBack.body === player) return true;
+            return false;
         }
     );
 
@@ -100,6 +101,7 @@ const isPlayerCarryingCable = () => {
         c => {
             if (c.connectionFront !== null && c.connectionFront.body === player) return true;
             if (c.connectionBack !== null && c.connectionBack.body === player) return true;
+            return false;
         }
     );
 
@@ -124,7 +126,7 @@ const nearestMachine = () => {
     });
 
     machineDistances = machineDistances.filter(e => {
-        return e.distance < 90;
+        return e.distance < PLAYER.GRAB_DISTANCE;
     });
 
     if (machineDistances.length === 0) {
@@ -290,12 +292,11 @@ const toggleGrab = () => {
         }
 
         if (plug === null || (machine !== null && machineDistance < plugDistance)) {
-
             let link = Constraint.create({
                 bodyA: body,
                 bodyB: machine,
                 length: 10,
-                pointB: { x: 0, y: (MACHINES.HEIGHT / 2) + 5 }
+                pointB: { x: -MACHINES.WIDTH / 2, y: 0 }
             })
             cable[connection] = {
                 constraint: link,
@@ -368,7 +369,6 @@ const addPlayer = () => {
 };
 
 const addCable = (xx, yy, length) => {
-
     let c = Composites.stack(xx, yy, length, 1, 1, 5, (x, y) => {
         return Bodies.circle(x, y, 5, {
             density: 0.0002,

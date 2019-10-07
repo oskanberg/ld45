@@ -13,8 +13,8 @@ export const PLAYER = {
 };
 
 export const MACHINES = {
-    HEIGHT: 100,
-    WIDTH: 80,
+    HEIGHT: 150,
+    WIDTH: 100,
     PROGRESS_PER_TICK: 20 * (1 / WORLD.TICKS_PS)
 };
 

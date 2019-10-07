@@ -4,8 +4,14 @@ import { Application, Sprite, Text, TextStyle, Graphics } from 'pixi.js';
 
 import playerPNG from '../img/player.png';
 import washer1PNG from '../img/washer1.png';
+import washer2PNG from '../img/washer2.png';
+import washer3PNG from '../img/washer3.png';
+import { createPublicKey } from 'crypto';
 
-
+const randomWasher = () => {
+    let washers = [washer1PNG, washer2PNG, washer3PNG];
+    return washers[Math.floor(Math.random() * washers.length)];
+}
 
 let app;
 
@@ -71,26 +77,24 @@ export const render = (player, cables, machines, plugs, tick) => {
         machine.loadsText.y = machine.body.position.y - MACHINES.HEIGHT / 2;
         app.stage.addChild(machine.loadsText);
 
-        machine.display = Sprite.from(washer1PNG);
+        machine.display = Sprite.from(randomWasher());
         machine.display.anchor.set(0.5);
         // machine.display.scale.set(10, 10);
-        machine.display.width = MACHINES.WIDTH + 20;
-        machine.display.height = MACHINES.HEIGHT + 50;
+        machine.display.width = MACHINES.WIDTH + 10;
+        machine.display.height = MACHINES.HEIGHT + 10;
         machine.display.position.set(machine.body.position.x, machine.body.position.y);
+
         machine.progressBar = progressB;
         app.stage.addChild(machine.display);
         app.stage.addChild(machine.progressBar);
-
-
     });
 
     // machines
     plugs.forEach(plug => {
-        plug.display = Sprite.from(playerPNG);
-        plug.display.anchor.set(0.5);
-        plug.display.width = PLUGS.WIDTH;
-        plug.display.height = PLUGS.HEIGHT;
-        plug.display.position.set(plug.position.x, plug.position.y);
+        plug.display = new Graphics();
+        plug.display.beginFill(0);
+        plug.display.drawRect(plug.position.x - PLUGS.WIDTH / 2, plug.position.y - PLUGS.HEIGHT / 2, PLUGS.WIDTH, PLUGS.HEIGHT);
+        plug.display.endFill();
         app.stage.addChild(plug.display);
     });
 
@@ -107,12 +111,24 @@ export const render = (player, cables, machines, plugs, tick) => {
         // cables
         cables.forEach(cable => {
             cable.display.clear();
-            cable.display.lineStyle(10, 0xfff, 1);
-            cable.display.moveTo(cable.composite.bodies[0]);
+            cable.display.lineStyle(7, 0xfff, 1, 0, false);
+
+            // if it's connected at the front, start with what it's connected to
+            if (cable.connectionFront !== null) {
+                cable.display.moveTo(cable.connectionFront.body.position.x, cable.connectionFront.body.position.y);
+            } else {
+                cable.display.moveTo(cable.composite.bodies[0].position.x, cable.composite.bodies[0].position.y);
+            }
+
             for (let i = 1; i < cable.composite.bodies.length; i++) {
                 cable.display.lineTo(cable.composite.bodies[i].position.x, cable.composite.bodies[i].position.y);
             }
-            cable.display.closePath();
+
+            // if it's connected at the back, end with what it's connected to
+            if (cable.connectionBack !== null) {
+                cable.display.lineTo(cable.connectionBack.body.position.x, cable.connectionBack.body.position.y);
+            }
+
         });
 
         // points
@@ -129,7 +145,7 @@ export const render = (player, cables, machines, plugs, tick) => {
             m.loadsText.y = m.body.position.y - MACHINES.HEIGHT / 2;
             app.stage.addChild(m.loadsText);
 
-            m.display.position.set(m.body.position.x, m.body.position.y)
+            m.display.position.set(m.body.position.x, m.body.position.y);
 
             m.progressBar.clear();
             m.progressBar.beginFill(0xDE3249);
