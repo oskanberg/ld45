@@ -129,6 +129,7 @@ export const render = (player, cables, machines, plugs, tick) => {
             m.loadsText.y = m.body.position.y - MACHINES.HEIGHT / 2;
             app.stage.addChild(m.loadsText);
 
+            m.display.position.set(m.body.position.x, m.body.position.y)
 
             m.progressBar.clear();
             m.progressBar.beginFill(0xDE3249);

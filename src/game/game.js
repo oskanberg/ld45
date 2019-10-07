@@ -36,6 +36,7 @@ const tick = d => {
     machines
         .filter(m => m.isActivated && m.loadsWaiting > 0)
         .forEach(machine => {
+            machine.body.position.x += Math.sin(machine.loadProgress * 2);
             machine.loadProgress += MACHINES.PROGRESS_PER_TICK;
 
             if (machine.loadProgress >= 100) {
@@ -95,7 +96,6 @@ const dropCable = () => {
 
 
 const isPlayerCarryingCable = () => {
-
     let connectedCables = cables.filter(
         c => {
             if (c.connectionFront !== null && c.connectionFront.body === player) return true;
@@ -239,17 +239,18 @@ const updateMachineState = () => {
         return true;
     });
 
-    if (pluggedInCables.length === 0) return;
-
     machines.forEach(machine => {
         machine.isActivated = false;
+        console.log("setting machine inactive")
         pluggedInCables.forEach(cable => {
             if (cable.connectionFront.body === machine.body) {
                 machine.isActivated = true;
+                console.log("machine active")
             };
 
             if (cable.connectionBack.body === machine.body) {
                 machine.isActivated = true;
+                console.log("machine active")
             }
         })
     })
