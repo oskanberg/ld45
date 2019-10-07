@@ -117,7 +117,6 @@ const isPlayerCarryingCable = () => {
 }
 
 const nearestMachine = () => {
-
     let machineDistances = [];
 
     machines.forEach(m => {
@@ -208,7 +207,6 @@ const nearestCableEnd = () => {
 }
 
 const disconnectCableEnd = (cable, end) => {
-
     if (cable[end] === null) return;
 
     World.remove(engine.world, cable[end].constraint);
@@ -216,7 +214,6 @@ const disconnectCableEnd = (cable, end) => {
 };
 
 const connectToPlayer = (cable, end, body) => {
-
     let constraint = Constraint.create({
         bodyA: body,
         bodyB: player,
@@ -232,23 +229,30 @@ const connectToPlayer = (cable, end, body) => {
     World.add(engine.world, constraint);
 };
 
-const updateMachineState = () => {
-    let pluggedInCables = cables.filter(c => {
+const updateCableState = () => {
+    cables.forEach(c => {
+        c.connectedCorrectly = false;
         if (c.connectionFront === null || c.connectionBack === null) {
-            return false;
+            return;
         }
 
         if (!plugs.some(p => (p === c.connectionFront.body || p === c.connectionBack.body))) {
-            return false;
+            return;
         }
+        c.connectedCorrectly = true;
+    })
+};
 
-        return true;
-    });
+const updateMachineState = () => {
+    updateCableState();
+    let pluggedInCables = cables.filter(c => c.connectedCorrectly);
 
     machines.forEach(machine => {
         machine.isActivated = false;
         console.log("setting machine inactive")
         pluggedInCables.forEach(cable => {
+            cable.connectedCorrectly = true;
+
             if (cable.connectionFront.body === machine.body) {
                 machine.isActivated = true;
                 console.log("machine active")
@@ -266,13 +270,9 @@ const updateMachineState = () => {
 const toggleGrab = () => {
 
     if (isPlayerCarryingCable()) {
-
         let { cable, body, connection } = dropCable();
-
         let { machine, distance: machineDistance } = nearestMachine();
-
         let { plug, distance: plugDistance } = nearestPlug();
-
 
         // both
         if (plug === null && machine === null) {
@@ -313,16 +313,6 @@ const toggleGrab = () => {
         return;
 
     }
-
-    // if the player was carrying nothing
-
-    // find the nearest cable end < minimum distance
-
-    // if it exists
-    // if it was connected to anything
-    // disconnect
-    // connect it to the player
-
 
     let { cable, end, body } = nearestCableEnd();
 
@@ -389,6 +379,7 @@ const addCable = (xx, yy, length) => {
         composite: c,
         connectionFront: null,
         connectionBack: null,
+        connectedCorrectly: false
     });
     World.add(world, c);
 };

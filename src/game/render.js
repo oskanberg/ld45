@@ -118,7 +118,12 @@ export const render = (player, cables, machines, plugs, tick) => {
             }
 
             cable.display.clear();
-            cable.display.lineStyle(7, 0xfff, 1, 0, false);
+
+            if (cable.connectedCorrectly === true) {
+                cable.display.lineStyle(7, 0xEEF229, 1, 0, false);
+            } else {
+                cable.display.lineStyle(7, 0xfff, 1, 0, false);
+            }
             cable.display.moveTo(start.x, start.y);
 
             for (let i = 1; i < cable.composite.bodies.length; i++) {

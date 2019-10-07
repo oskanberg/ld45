@@ -8,7 +8,7 @@ export const WORLD = {
 export const PLAYER = {
     SPEED: 1e-1 / WORLD.TICKS_PS,
     RADIUS: 25,
-    GRAB_DISTANCE: 100
+    GRAB_DISTANCE: 120
 };
 
 export const MACHINES = {
