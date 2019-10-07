@@ -40,14 +40,6 @@ export const render = (player, cables, machines, plugs, tick) => {
     playerSprite.position.set(player.position.x, player.position.y);
     app.stage.addChild(playerSprite);
 
-    // cables
-    cables.forEach(cable => {
-        cable.display = new Graphics();
-        app.stage.addChild(cable.display);
-    });
-
-
-
     const style = new TextStyle({
         fontFamily: 'Arial',
         fontSize: 36,
@@ -65,6 +57,21 @@ export const render = (player, cables, machines, plugs, tick) => {
         wordWrapWidth: 440,
     });
 
+    // plugs
+    plugs.forEach(plug => {
+        plug.display = Sprite.from(plugPNG);
+        plug.display.anchor.set(0.5);
+        plug.display.width = PLUGS.WIDTH;
+        plug.display.height = PLUGS.HEIGHT;
+        plug.display.position.set(plug.position.x, plug.position.y);
+        app.stage.addChild(plug.display);
+    });
+
+    // cables
+    cables.forEach(cable => {
+        cable.display = new Graphics();
+        app.stage.addChild(cable.display);
+    });
 
     // machines
     machines.forEach(machine => {
@@ -90,18 +97,6 @@ export const render = (player, cables, machines, plugs, tick) => {
         app.stage.addChild(machine.progressBar);
     });
 
-    // plugs
-    plugs.forEach(plug => {
-
-
-        plug.display = Sprite.from(plugPNG);
-        plug.display.anchor.set(0.5);
-        plug.display.width = PLUGS.WIDTH;
-        plug.display.height = PLUGS.HEIGHT;
-        plug.display.position.set(plug.position.x - PLUGS.WIDTH / 2, plug.position.y - PLUGS.HEIGHT / 30);
-        app.stage.addChild(plug.display);
-    });
-
     let pointsText = new Text(`${player.points}`, style);
     pointsText.x = 50;
     pointsText.y = 50;
@@ -114,24 +109,37 @@ export const render = (player, cables, machines, plugs, tick) => {
 
         // cables
         cables.forEach(cable => {
-            cable.display.clear();
-            cable.display.lineStyle(7, 0xfff, 1, 0, false);
 
             // if it's connected at the front, start with what it's connected to
+            let start;
             if (cable.connectionFront !== null) {
-                cable.display.moveTo(cable.connectionFront.body.position.x, cable.connectionFront.body.position.y);
+                start = cable.connectionFront.body.position;
             } else {
-                cable.display.moveTo(cable.composite.bodies[0].position.x, cable.composite.bodies[0].position.y);
+                start = cable.composite.bodies[0].position;
             }
+
+            cable.display.clear();
+            cable.display.lineStyle(7, 0xfff, 1, 0, false);
+            cable.display.moveTo(start.x, start.y);
 
             for (let i = 1; i < cable.composite.bodies.length; i++) {
                 cable.display.lineTo(cable.composite.bodies[i].position.x, cable.composite.bodies[i].position.y);
             }
 
             // if it's connected at the back, end with what it's connected to
+            let end;
             if (cable.connectionBack !== null) {
-                cable.display.lineTo(cable.connectionBack.body.position.x, cable.connectionBack.body.position.y);
+                end = cable.connectionBack.body.position;
+                cable.display.lineTo(end.x, end.y);
+            } else {
+                end = cable.composite.bodies[cable.composite.bodies.length - 1].position;
             }
+
+            cable.display.beginFill(0xDE3249);
+            cable.display.lineStyle(4, 0xfff, 1, 0, false);
+            cable.display.drawCircle(start.x - 4, start.y, 10)
+            cable.display.drawCircle(end.x - 4, end.y, 10);
+            cable.display.endFill();
 
         });
 
