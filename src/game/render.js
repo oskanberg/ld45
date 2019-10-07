@@ -22,7 +22,7 @@ export const createRenderer = () => {
         resolution: window.devicePixelRatio || 1,
         antialias: true,
     });
-    app.ticker.speed = 0.5;
+    app.ticker.speed = 0.6;
     return app.view;
 }
 

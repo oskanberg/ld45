@@ -36,7 +36,11 @@ const tick = d => {
     machines
         .filter(m => m.isActivated && m.loadsWaiting > 0)
         .forEach(machine => {
-            machine.body.position.x += Math.sin(machine.loadProgress * 2) + (Math.random() * 2) - 1;
+            Body.setPosition(machine.body, {
+                x: machine.body.position.x + Math.sin(machine.loadProgress * 2) + (Math.random() * 2) - 1,
+                y: machine.body.position.y
+            })
+
             machine.loadProgress += MACHINES.PROGRESS_PER_TICK;
 
             if (machine.loadProgress >= 100) {
@@ -376,7 +380,7 @@ const addCable = (xx, yy, length) => {
         });
     });
 
-    Composites.chain(c, 0.5, 0, -0.5, 0, {
+    Composites.chain(c, 0, 0.5, 0, -0.5, {
         stiffness: 1,
         render: { type: 'line' }
     });
@@ -424,25 +428,12 @@ const togglePause = () => {
     runner = null;
 };
 
-const create = element => {
+const create = (shouldRender, element) => {
     engine = Engine.create();
     engine.constraintIterations = 1;
     world = engine.world;
     world.gravity.y = 0;
     world.gravity.x = 0;
-
-    // let render = Render.create({
-    //     element: element,
-    //     engine: engine,
-    //     options: {
-    //         width: WORLD.WIDTH,
-    //         height: WORLD.HEIGHT,
-    //         showAngleIndicator: true,
-    //         showCollisions: true,
-    //         showVelocity: true,
-    //         wireframes: false,
-    //     }
-    // });
 
     addPlayer();
     addCable(WORLD.WIDTH / 2.5, 100, 30);
@@ -455,14 +446,30 @@ const create = element => {
     addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 1.5);
     addPlug(WORLD.WIDTH / 2, PLUGS.HEIGHT / 2);
     // addPlug(WORLD.WIDTH / 1.5, PLUGS.HEIGHT / 2);
-    // togglePause();
-    // Render.run(render);
 
     registerControls(onKeyDownUpdate, onKeyUpUpdate);
 
     setInterval(() => {
         machines[Math.floor(Math.random() * machines.length)].loadsWaiting++;
     }, 5000)
+
+    if (shouldRender) {
+        let render = Render.create({
+            element: element,
+            engine: engine,
+            options: {
+                width: WORLD.WIDTH,
+                height: WORLD.HEIGHT,
+                showAngleIndicator: true,
+                showCollisions: true,
+                showVelocity: true,
+                wireframes: false,
+            }
+        });
+
+        togglePause();
+        Render.run(render);
+    }
 
     return {
         // canvas: render.canvas,

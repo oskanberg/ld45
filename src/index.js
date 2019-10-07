@@ -2,9 +2,20 @@ import './index.css';
 import createPhysics from './game/game.js';
 import { createRenderer, render } from './game/render.js';
 
-let { cables, player, machines, plugs, tick } = createPhysics();
 
-let canvas = createRenderer();
-document.getElementById('game').appendChild(canvas);
+const DEBUG_RENDER = false;
 
-render(player, cables, machines, plugs, tick);
+let {
+    cables,
+    player,
+    machines,
+    plugs,
+    tick,
+    canvas
+} = createPhysics(DEBUG_RENDER, document.getElementById('game'));
+
+if (!DEBUG_RENDER) {
+    let renderCanvas = createRenderer();
+    document.getElementById('game').appendChild(renderCanvas);
+    render(player, cables, machines, plugs, tick);
+}
