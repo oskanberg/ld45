@@ -445,7 +445,6 @@ const create = (shouldRender, element) => {
     addMachine(WORLD.WIDTH / 2, WORLD.HEIGHT / 1.5);
     addMachine(WORLD.WIDTH / 3, WORLD.HEIGHT / 1.5);
     addPlug(WORLD.WIDTH / 2, PLUGS.HEIGHT / 2);
-    // addPlug(WORLD.WIDTH / 1.5, PLUGS.HEIGHT / 2);
 
     registerControls(onKeyDownUpdate, onKeyUpUpdate);
 
