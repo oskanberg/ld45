@@ -2,7 +2,6 @@ import './index.css';
 import createPhysics from './game/game.js';
 import { createRenderer, render } from './game/render.js';
 
-
 const DEBUG_RENDER = false;
 
 let {

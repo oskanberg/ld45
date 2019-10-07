@@ -419,6 +419,25 @@ const togglePause = () => {
     runner = null;
 };
 
+const addRandomLoad = () => {
+    let inactiveMachines = machines.filter(m => !m.isActivated);
+    let machine = inactiveMachines[Math.floor(Math.random() * inactiveMachines.length)];
+    machine.loadsWaiting++;
+    if (machine.loadsWaiting >= 10 ) {
+        alert(`The washing piled up too high! You got ${player.points} points.`)
+        return true;
+    }
+    return false;
+};
+
+const addLoadsTimeout = length => {
+    let gameEnded = addRandomLoad();
+    if (gameEnded) return;
+
+    if (length < 500) length = 500;
+    setTimeout(() => addLoadsTimeout(length - 100), length)
+};
+
 const create = (shouldRender, element) => {
     engine = Engine.create();
     engine.constraintIterations = 1;
@@ -440,10 +459,7 @@ const create = (shouldRender, element) => {
     addPlug(WORLD.WIDTH / 2, WORLD.HEIGHT - PLUGS.HEIGHT / 2);
 
     registerControls(onKeyDownUpdate, onKeyUpUpdate);
-
-    setInterval(() => {
-        machines[Math.floor(Math.random() * machines.length)].loadsWaiting++;
-    }, 5000)
+    addLoadsTimeout(4000);
 
     if (shouldRender) {
         let render = Render.create({
